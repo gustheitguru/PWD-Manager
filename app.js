@@ -23,6 +23,12 @@ var argv = require('yargs')
 				alias: 'p',
 				description: 'your password goes here',
 				type: 'string'
+			}
+			masterPassword: {
+				demand: 'true',
+				alias: 'm',
+				description: 'master Password',
+				type: 'string'
 			}			
 		}).help('help');
 	})
