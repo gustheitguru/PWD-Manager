@@ -1,6 +1,3 @@
-//PWD 3 challange
-
-
 console.log('Starting PWD Manager');
 
 var storage = require('node-persist');
@@ -26,7 +23,7 @@ var argv = require('yargs')
 				alias: 'p',
 				description: 'your password goes here',
 				type: 'string'
-			},
+			}
 			masterPassword: {
 				demand: true,
 				alias: 'm',
@@ -42,13 +39,7 @@ var argv = require('yargs')
 				alias: 'n',
 				description: 'Your first name goes here',
 				type: 'string'
-			},
-			masterPassword: {
-				demand: true,
-				alias: 'm',
-				description: 'master Password',
-				type: 'string'
-			}	
+			}
 		}).help('help');
 	})
 	.help('help')
@@ -66,7 +57,7 @@ var command = argv._[0];
 
 
 
-function createAccount (account, masterPassword){
+function createAccount (account){
 
 	var accounts = storage.getItemSync('accounts');
 
@@ -80,7 +71,7 @@ function createAccount (account, masterPassword){
 	return account;
 }
 
-function getAccount (accountName, masterPassword) {
+function getAccount (accountName) {
 	var accounts = storage.getItemSync('accounts');
 	var matchedAccount;
 
@@ -93,39 +84,25 @@ function getAccount (accountName, masterPassword) {
 	return matchedAccount;
 
 }
-//PWD 3 
-// Get account with MasterPWD
-function getAccounts (masterPassword) {
-	// getItemSync to fetch accounts
-	// decrypt
-	// return accounts
-}
 
-// Save Account with MasterPWD
-function saveAccount (masterPassword) {
-	// encrypt accounts
-	// setItemSync
-	storage.setItemSync('accountName',)
-	// return account
-}
 
 if (command === 'create') {
 	var createAccount = createAccount({
 		name: argv.name,
 		UserName: argv.Username,
 		pwd: argv.password
-	}, argv.masterPassword);
+	});
 	console.log('Account was created');
 	console.log(createAccount);
 } else if (command === 'get'){
-	var fetchAccount = getAccount(argv.name, argv.masterPassword);
+	var fetchAccount = getAccount(argv.name);
 
 	if (typeof fetchAccount === 'undefined') {
 		console.log('Account Not found');
 	} else if (true) {
 		console.log('Account Found');
 		console.log(fetchAccount);
-	}, 
+	}
 }
 
 // -- PWD Manager 1 Data --
