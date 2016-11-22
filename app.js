@@ -1,145 +1,148 @@
-//PWD 3 challange
+console.log('starting password manager');
 
-
-console.log('Starting PWD Manager');
-
+var crypto = require('crypto-js')
 var storage = require('node-persist');
 storage.initSync();
 
 var argv = require('yargs')
-	.command('create', 'Get the user account', function (yargs) {
+	.command('create', 'Create a new account', function (yargs) {
 		yargs.options({
 			name: {
 				demand: true,
 				alias: 'n',
-				description: 'Your first name goes here',
+				description: 'Account name (eg: Twitter, Facebook)',
 				type: 'string'
 			},
-			Username: {
+			username: {
 				demand: true,
-				alias: 'un',
-				description: 'your Username goes here',
+				alias: 'u',
+				description: 'Account username or email',
 				type: 'string'
 			},
 			password: {
 				demand: true,
 				alias: 'p',
-				description: 'your password goes here',
+				description: 'Account password',
 				type: 'string'
 			},
 			masterPassword: {
 				demand: true,
 				alias: 'm',
-				description: 'master Password',
+				description: 'Master password',
 				type: 'string'
-			}			
+			}
 		}).help('help');
 	})
-	.command('get', 'Create account', function (yargs){
-				yargs.options({
+	.command('get', 'Get an existing account', function (yargs) {
+		yargs.options({
 			name: {
 				demand: true,
 				alias: 'n',
-				description: 'Your first name goes here',
+				description: 'Account name (eg: Twitter, Facebook)',
 				type: 'string'
 			},
 			masterPassword: {
 				demand: true,
 				alias: 'm',
-				description: 'master Password',
+				description: 'Master password',
 				type: 'string'
-			}	
+			}
 		}).help('help');
 	})
 	.help('help')
 	.argv;
 var command = argv._[0];
-// -- PWD Manager 2 Data --
-// create 
-// -Name
-// -UserName
-// -PWD
-// get 
-// - name of account
-// -- use example-args.js
-// ------------------------------
 
+// create
+//     --name
+//     --username
+//     --password
 
+// get
+//     --name
 
-function createAccount (account, masterPassword){
+// account.name Facebook
+// account.username User12!
+// account.password Password123!
 
-	var accounts = storage.getItemSync('accounts');
+function getAccounts (masterPassword) {
+	// use getItemSync to fetch accounts
+	var encryptedAccount = storage.getItemSync('accounts');
+	var accounts = [];
 
-	if (typeof accounts === 'undefined'){
-		accounts = [];
+	// decrypt
+	if (typeof encryptedAccount !== 'undefined') {
+		var bytes = crypto.AES.decrypt(encryptedAccount, masterPassword);
+		accounts = JSON.parse(bytes.toString(crypto.enc.Utf8));
 	}
 
+	// return accounts array
+	return accounts;
+}
+
+function saveAccounts (accounts, masterPassword) {
+	// encrypt accounts
+	var encryptedAccounts = crypto.AES.encrypt(JSON.stringify(accounts), masterPassword);
+	
+	// setItemSync
+	storage.setItemSync('accounts', encryptedAccounts.toString());
+	
+	// return accounts
+	return accounts;
+}
+
+function createAccount (account, masterPassword) {
+	var accounts = getAccounts(masterPassword);
+
 	accounts.push(account);
-	storage.setItemSync('accounts', accounts);
+
+	saveAccounts(accounts, masterPassword);
 
 	return account;
 }
 
 function getAccount (accountName, masterPassword) {
-	var accounts = storage.getItemSync('accounts');
+	var accounts = getAccounts(masterPassword)
 	var matchedAccount;
 
-	accounts.forEach(function (account){
-		if (account.name === accountName){
+	accounts.forEach(function (account) {
+		if (account.name === accountName) {
 			matchedAccount = account;
 		}
 	});
 
 	return matchedAccount;
-
-}
-//PWD 3 
-// Get account with MasterPWD
-function getAccounts (masterPassword) {
-	// getItemSync to fetch accounts
-	// decrypt
-	// return accounts
 }
 
-// Save Account with MasterPWD
-function saveAccount (masterPassword) {
-	// encrypt accounts
-	// setItemSync
-	storage.setItemSync('accountName',)
-	// return account
-}
+
+//added try catch block to handle errors
 
 if (command === 'create') {
-	var createAccount = createAccount({
-		name: argv.name,
-		UserName: argv.Username,
-		pwd: argv.password
-	}, argv.masterPassword);
-	console.log('Account was created');
-	console.log(createAccount);
-} else if (command === 'get'){
-	var fetchAccount = getAccount(argv.name, argv.masterPassword);
-
-	if (typeof fetchAccount === 'undefined') {
-		console.log('Account Not found');
-	} else if (true) {
-		console.log('Account Found');
-		console.log(fetchAccount);
-	}, 
+	try {
+		var createdAccount = createAccount({
+			name: argv.name,
+			username: argv.username,
+			password: argv.password
+		}, argv.masterPassword);
+		console.log('Account created!');
+		console.log(createdAccount);
+	} catch (e) {
+		console.log('Unable to create account');	
+	}  
+} else if (command === 'get') {
+	try {
+		var fetchedAccount = getAccount(argv.name, argv.masterPassword);
+	
+		if (typeof fetchedAccount === 'undefined') {
+			console.log('Account not found');
+		} else {
+			console.log('Account found!');
+			console.log(fetchedAccount);
+		}
+	} catch (e) {
+		console.log('unable to fetch account');
+	}
 }
 
-// -- PWD Manager 1 Data --
-// createAccount({
-// 	name: 'FaceBook',
-// 	username: 'gus@csha.net',
-// 	pwd: 'Password123'
-// });
 
-// var fbAccount = getAccount('FaceBook');
-// console.log(fbAccount);
 
-// Account Name FaceBook
-//account.Username User12
-//Account.pwd Password123!
-
-// ------------------------------
